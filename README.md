@@ -20,16 +20,17 @@ pip install forestiler
 > :warning: Only north-up images are supported. If your raster images are rotated, please transform them first!
 
 ```
-usage: forestile [-h] [--no-progress] [--pad] [--kernel-size KERNEL_SIZE] [--stride STRIDE] --vector-mask VECTOR_MASK 
-                 [--class-field CLASS_FIELD] [--all-classes] [--classes CLASSES [CLASSES ...]]
-                 [--input-glob INPUT_GLOB] [--geo-tiff]
+usage: forestile [-h] [--no-progress] [--pad] [--kernel-size KERNEL_SIZE] [--stride STRIDE] 
+                 --vector-mask VECTOR_MASK [--class-field CLASS_FIELD] [--all-classes]
+                 [--classes CLASSES [CLASSES ...]] [--input-glob INPUT_GLOB] [--geo-tiff]
                  input out
 
 forestile creates image tiles from large input rasters according to a classified mask vector file.
 
 positional arguments:
   input                 Directory containing raster files to tile.
-  out                   Directory where output files should be stored. May not exist prior to program invocation.
+  out                   Directory where output files should be stored. 
+                        May not exist prior to program invocation.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -39,7 +40,8 @@ optional arguments:
                         Kernel size in pixels.
   --stride STRIDE       Stride of kernel.
   --vector-mask VECTOR_MASK
-                        Path to vector file. Always reads first layer, if driver supports multi-layerr files (e.g. Geopackages).
+                        Path to vector file. Always reads first layer, 
+                        if driver supports multi-layerr files (e.g. Geopackages).
   --class-field CLASS_FIELD
                         Attribute field containing class values.
   --all-classes         Generate image chips for all unique values in class field.

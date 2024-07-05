@@ -60,7 +60,7 @@ Given a directory structure like the one listed below, the following command rea
 All output image chips, here as georeferenced TIFF files, are written into the directory `output` (which may not exist prior to program invocation).
 
 ```bash
-forestile --stride 50 --vector-mask mask.gpkg --class-field tree --classes --geo-tiff "oak" rasters/ output/
+forestile --stride 50 --vector-mask mask.gpkg --class-field tree --classes "oak" --geo-tiff rasters/ output/
 ```
 
 ```bash

@@ -72,7 +72,7 @@ def main():
         type=str,
         required=False,
         default="*.tif",
-        help="Optional glob pattern to filter files in input directory.",
+        help="Optional glob pattern to filter files in input directory. May not exist prior to program invocation.",
     )
     parser.add_argument("--geo-tiff", action="store_true", help="Store image chips as GeoTiffs instead of PNGs.")
     parser.add_argument("input", type=Path, help="Directory containing raster files to tile.")

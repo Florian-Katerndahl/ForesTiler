@@ -1,5 +1,7 @@
 # ForesTiler — Create Image Tiles From Large Input Rasters According to a Classified Mask Vector File
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12805524.svg)](https://doi.org/10.5281/zenodo.12805524)
+
 ForesTiler provides a CLI tool to create image tiles from large input rasters according to a classified mask vector file.
 The goal is to export images that are completely covered by a class polygon.
 They can be saved either as PNGs to directly feed them into machine learning frameworks which may not interop with geodata or
@@ -77,6 +79,10 @@ forestile --stride 50 --vector-mask mask.gpkg --class-field tree --classes "oak"
 ## Contribution
 
 Bug reports, suggestions and feature requests are always welcomed. Please [open an issue](https://github.com/Florian-Katerndahl/ForesTiler/issues) on GitHub.
+
+## Citation
+
+If you use this package, see [CITATION](CITATION.cff) and cite this work.
 
 ## Acknowledgements
 

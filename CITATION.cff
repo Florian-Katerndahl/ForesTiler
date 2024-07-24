@@ -12,6 +12,9 @@ authors:
     family-names: Katerndahl
     orcid: 'https://orcid.org/0000-0001-6137-061X'
     email: florian@katerndahl.com
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.12805524
 abstract: Create Image Tiles From Large Input Rasters According to a Classified Mask Vector File
 version: '0.1.1'
 date-released: '2024-07-24'

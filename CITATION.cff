@@ -13,6 +13,6 @@ authors:
     email: florian@katerndahl.com
 abstract: Create Image Tiles From Large Input Rasters According to a Classified Mask Vector File
 version: '0.1.1'
-date-released: '2024-07-05'
+date-released: '2024-07-24'
 repository-code: 'https://github.com/Florian-Katerndahl/ForesTiler'
 license: GPL-2.0-only

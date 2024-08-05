@@ -193,7 +193,13 @@ def main():
 
         query_results = mask_tree.query(bboxes, predicate="covered_by")
         if query_results.size == 0:
-            continue
+            # TODO document exit codes
+            if args.cubed:
+                # input directory is granule of datacube; if no matches found for first tile,
+                #  then there won't be any for later tiles.
+                exit(2)
+            else:
+                continue
         classes = mask_vector.iloc[query_results[1]][mask_field].tolist()
         basename = str(raster_file.stem)
         output_bboxes_list = bboxes.take(query_results[0]).tolist()

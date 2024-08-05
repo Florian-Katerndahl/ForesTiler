@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "forestiler"
-version = "0.2.0"
+version = "0.2.1a0"
 description = "Create Image Tiles From Large Input Rasters According to a Classified Mask Vector File"
 license = "GPL-2.0-only"
 authors = ["Florian Katerndahl <florian@katerndahl.com>"]

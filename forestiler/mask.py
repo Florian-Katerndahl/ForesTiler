@@ -8,7 +8,7 @@ def create_masks(
     vec_mask: Path, class_field: str, all_classes: bool = True, mask_classes: Optional[List[str]] = None
 ) -> List[Dict[str, STRtree]]:
     vector_mask: gpd.GeoDataFrame = gpd.read_file(vec_mask)
-    mask_classes: List[str] = vector_mask[class_field].unique if all_classes else mask_classes
+    mask_classes: List[str] = vector_mask[class_field].unique() if all_classes else mask_classes
 
     mask_objects: List[Dict] = []
     for mclass in mask_classes:

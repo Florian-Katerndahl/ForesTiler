@@ -4,27 +4,59 @@ import geopandas as gpd
 import rasterio as rio
 from shapely import box
 import numpy as np
+from PIL import Image
+from random import randint
+from time import sleep
+import os
+import multiprocessing as mp
+
+def raster_worker(q: mp.Queue) -> None:
+    os.nice(5)
+    while True:
+        # data, path, as_geotiff, transformation, crs, bands, kernel_size
+        item = q.get()
+        if not item[2]:
+            Image.fromarray(item[0].squeeze()).save(item[1])
+        else:
+            with rio.open(
+                item[1],
+                "w",
+                driver="GTiff",
+                height=item[6],
+                width=item[6],
+                count=item[5],
+                dtype=item[0].dtype,
+                crs=item[4],
+                transform=item[3],
+            ) as dst:
+                for band in range(item[5]):
+                    dst.write(item[0][band, ...].squeeze(), band + 1)
+
+
+def vector_worker(q: mp.Queue):
+    os.nice(5)
+    while True:
+        vector_chips(*q.get())
 
 
 def write_imgs(img, path, as_gtiff, file_type, offset, res, crs) -> None:
     if not as_gtiff:
-        img.save(path.with_suffix(file_type))
+        Image.fromarray(img).save(path.with_suffix(file_type))
     else:
-        data = np.array(img)
         transform = rio.transform.Affine.translation(*offset) * rio.transform.Affine.scale(*res)
         with rio.open(
             path.with_suffix(file_type),
             "w",
             driver="GTiff",
-            height=data.shape[0],
-            width=data.shape[1],
-            count=data.shape[2],
-            dtype=data.dtype,
+            height=img.shape[0],
+            width=img.shape[1],
+            count=img.shape[2],
+            dtype=img.dtype,
             crs=crs,
             transform=transform,
         ) as dst:
-            for band in range(data.shape[-1]):
-                dst.write(data[..., band], band + 1)
+            for band in range(img.shape[-1]):
+                dst.write(img[..., band], band + 1)
 
 
 def vector_chips(bboxes: List[box], classes: List[str], crs, destination: Path, base_name: str) -> None:

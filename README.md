@@ -1,6 +1,6 @@
 # ForesTiler — Create Image Tiles From Large Input Rasters According to a Classified Mask Vector File
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12805524.svg)](https://doi.org/10.5281/zenodo.12805524)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13221009.svg)](https://doi.org/10.5281/zenodo.13221009)
 
 ForesTiler provides a CLI tool to create image tiles from large input rasters according to a classified mask vector file.
 The goal is to export images that are completely covered by a class polygon.

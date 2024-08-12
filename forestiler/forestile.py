@@ -108,6 +108,7 @@ def main():
     FILE_SUFFIX = ".tif" if args.geo_tiff else ".png"
     single_use = not args.cubed
     coordinate_kernels_missing = True
+    vector_footprint_written = False
 
     for raster_file in tqdm(
         args.input.rglob("*LEVEL2_SEN*BOA.tif"),
@@ -204,8 +205,9 @@ def main():
         basename = str(raster_file.stem)
         output_bboxes_list = bboxes.take(query_results[0]).tolist()
 
-        # This is also slow... maybe put in a queue as well?
-        vector_queue.put((output_bboxes_list, classes, raster_crs, args.out, basename))
+        if args.cubed and not vector_footprint_written:
+            vector_footprint_written = True
+            vector_queue.put((output_bboxes_list, classes, raster_crs, args.out, basename))
 
         output_tiles = (
             raster_kernels[:, query_results[0], :]

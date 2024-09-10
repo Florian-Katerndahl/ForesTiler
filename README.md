@@ -9,7 +9,11 @@ as GeoTIFFs when retention of geographic information is deemed important.
 
 ## Installation
 
-> :warning: Please note, that you need to have at least Python 3.9 installed.
+> [!WARNING]
+> Please note, that you need to have at least Python 3.9 installed.
+
+> [!TIP]
+> Use pipx instead of pip which also creates a unique virtual environment for environment isolation.
 
 You can install `forestiler` via pip by running
 
@@ -19,7 +23,8 @@ pip install forestiler
 
 ## Usage
 
-> :warning: Only north-up images are supported. If your raster images are rotated, please transform them first!
+> [!CAUTION]
+> Only north-up images are supported. If your raster images are rotated, please transform them first!
 
 ```
 usage: forestile [-h] [--no-progress] [--pad] [--kernel-size KERNEL_SIZE] [--stride STRIDE] 

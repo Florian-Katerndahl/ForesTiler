@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
+import re
 
 from tqdm import tqdm
 from shapely import STRtree, box
@@ -201,7 +202,7 @@ def main():
                 exit(2)
             else:
                 continue
-        classes = mask_vector.iloc[query_results[1]][mask_field].tolist()
+        classes = list(map(lambda x: re.sub("[\s,._\/]", "-", x), mask_vector.iloc[query_results[1]][mask_field].tolist()))
         basename = str(raster_file.stem)
         output_bboxes_list = bboxes.take(query_results[0]).tolist()
 

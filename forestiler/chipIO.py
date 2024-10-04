@@ -34,7 +34,6 @@ def raster_worker(q: mp.Queue) -> None:
 
 
 def vector_worker(q: mp.Queue):
-    os.nice(5)
     while True:
         vector_chips(*q.get())
 
@@ -62,4 +61,4 @@ def write_imgs(img, path, as_gtiff, file_type, offset, res, crs) -> None:
 def vector_chips(bboxes: List[box], classes: List[str], crs, destination: Path, base_name: str) -> None:
     vector_chips = gpd.GeoDataFrame(index=list(range(len(bboxes))), crs=crs, geometry=bboxes)
     vector_chips["class"] = classes
-    vector_chips.to_file(destination / f"{base_name}_bboxes.gpkg")
+    vector_chips.to_file(destination / f"{base_name}_bboxes.gpkg", layer="polylayer")

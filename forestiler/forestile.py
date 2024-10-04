@@ -11,7 +11,7 @@ import geopandas as gpd
 import torch
 from torch.nn import functional as f
 
-from forestiler.chipIO import raster_worker, vector_worker
+from forestiler.chipIO import raster_worker, vector_worker, vector_chips
 
 
 def main():
@@ -76,6 +76,11 @@ def main():
         help="Store image chips as GeoTiffs instead of PNGs.",
     )
     parser.add_argument(
+        "--footprint-only",
+        action="store_true",
+        help="Only output the vector database with granule footprints. Do not save raster tiles."
+    )
+    parser.add_argument(
         "input", type=Path, help="Directory containing raster files to tile."
     )
     parser.add_argument(
@@ -86,17 +91,12 @@ def main():
     args.out.mkdir(exist_ok=True)
 
     output_queue = mp.Queue()
-    vector_queue = mp.Queue()
 
+    rworker = []
     for _ in range(int(mp.cpu_count() * 0.8)):
-        mp.Process(target=raster_worker, args=(output_queue,), daemon=True).start()
-
-    mp.Process(
-        target=vector_worker,
-        args=(vector_queue,),
-        name="forestiler_vector",
-        daemon=True,
-    ).start()
+        r = mp.Process(target=raster_worker, args=(output_queue,), daemon=True)
+        rworker.append(r)
+        r.start()
 
     # order does not seem to make a difference (bounding boxes as STRtree or geometries as STRtree)
     mask_field = args.class_field
@@ -112,7 +112,7 @@ def main():
     vector_footprint_written = False
 
     for raster_file in tqdm(
-        args.input.rglob("*LEVEL2_SEN*BOA.tif"),
+        args.input.rglob(args.input_glob),
         "Scenes",
         unit="file",
         bar_format="{desc}: {n_fmt} [{elapsed} elapsed, {rate_fmt}{postfix}]",
@@ -125,10 +125,12 @@ def main():
             psx, psy = raster.res
             psy *= -1
             raster_crs = raster.crs.to_epsg()
+        
+        assert raster_crs == mask_vector.crs.to_epsg(), \
+            "Raster and vector files must be in the same coordinate system"
 
-        assert (
-            rows == cols
-        ), "Input dataset must have the same number of columns and rows"
+        assert rows == cols, \
+            "Input dataset must have the same number of columns and rows"
 
         raster_tensor = torch.from_numpy(raster_values).double()
         raster_tensor = raster_tensor[None, ...]
@@ -208,7 +210,10 @@ def main():
 
         if args.cubed and not vector_footprint_written:
             vector_footprint_written = True
-            vector_queue.put((output_bboxes_list, classes, raster_crs, args.out, basename))
+            vector_chips(output_bboxes_list, classes, raster_crs, args.out, basename)
+
+        if args.footprint_only:
+            break
 
         output_tiles = (
             raster_kernels[:, query_results[0], :]

@@ -129,9 +129,6 @@ def main():
         assert raster_crs == mask_vector.crs.to_epsg(), \
             "Raster and vector files must be in the same coordinate system"
 
-        assert rows == cols, \
-            "Input dataset must have the same number of columns and rows"
-
         raster_tensor = torch.from_numpy(raster_values).double()
         raster_tensor = raster_tensor[None, ...]
         raster_kernels = f.unfold(

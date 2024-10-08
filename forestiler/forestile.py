@@ -128,6 +128,9 @@ def main():
         
         assert raster_crs == mask_vector.crs.to_epsg(), \
             "Raster and vector files must be in the same coordinate system"
+        
+        assert all(mask_vector.geom_type == "Polygon"), \
+            "Mask vector is only allowed to contain `Polygon` geometries"
 
         raster_tensor = torch.from_numpy(raster_values).double()
         raster_tensor = raster_tensor[None, ...]

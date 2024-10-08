@@ -11,7 +11,8 @@ import os
 import multiprocessing as mp
 
 def raster_worker(q: mp.Queue) -> None:
-    os.nice(5)
+    if os.system() in ["Linux", "Darwin"]:
+        os.nice(5)
     while True:
         # data, path, as_geotiff, transformation, crs, bands, kernel_size
         item = q.get()

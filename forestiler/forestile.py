@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
 import re
+from warnings import warn
 
 from tqdm import tqdm
 from shapely import STRtree, box
@@ -10,9 +11,11 @@ import rasterio as rio
 import geopandas as gpd
 import torch
 from torch.nn import functional as f
+from psutil import virtual_memory
 
-from forestiler.chipIO import raster_worker, vector_worker, vector_chips
+from forestiler.chipIO import raster_worker, vector_chips
 
+SIZEOF_DOUBLE = 8
 
 def main():
     parser = ArgumentParser(
@@ -29,7 +32,7 @@ def main():
         help="Kernel size in pixels.",
     )
     parser.add_argument(
-        "--stride", type=int, required=False, default=1, help="Stride of kernel."
+        "--stride", type=int, required=False, default=256, help="Stride of kernel."
     )
     parser.add_argument(
         "--vector-mask",
@@ -90,7 +93,7 @@ def main():
 
     args.out.mkdir(exist_ok=True)
 
-    output_queue = mp.Queue()
+    output_queue = mp.Queue(maxsize=4096)
 
     rworker = []
     for _ in range(int(mp.cpu_count() * 0.8)):
@@ -101,8 +104,12 @@ def main():
     # order does not seem to make a difference (bounding boxes as STRtree or geometries as STRtree)
     mask_field = args.class_field
     mask_vector = gpd.read_file(args.vector_mask)
+
+    assert all(mask_vector.geom_type == "Polygon"), \
+        "Mask vector is only allowed to contain `Polygon` geometries"
+
     if not args.all_classes:
-        mask_vector = mask_vector.loc[mask_vector[mask_field] in args.classes]
+        mask_vector = mask_vector.loc[mask_vector[mask_field].isin(args.classes)]
     mask_tree = STRtree(mask_vector.geometry)
 
     PADDING = 0  # padding is disabled because it messes with the coordinates, may be fixed later
@@ -113,7 +120,7 @@ def main():
 
     for raster_file in tqdm(
         args.input.rglob(args.input_glob),
-        "Scenes",
+        "Scene(s)",
         unit="file",
         bar_format="{desc}: {n_fmt} [{elapsed} elapsed, {rate_fmt}{postfix}]",
         disable=args.quiet,
@@ -125,14 +132,20 @@ def main():
             psx, psy = raster.res
             psy *= -1
             raster_crs = raster.crs.to_epsg()
+
+        expected_memory_usage: int = (((rows - args.kernel_size + 1) / args.stride) * ((cols - args.kernel_size + 1) / args.stride) * (args.kernel_size ** 2 * bands * SIZEOF_DOUBLE))
+
+        assert virtual_memory().available > expected_memory_usage, \
+            "System does not provide sufficient available memory for creation of tiles. Either decrease input size (e.g. by using gdal_retile) or choose a larger kernel and/or stride."
         
+        assert expected_memory_usage > 0, \
+            "Kernel can't be bigger than input image"
+
         assert raster_crs == mask_vector.crs.to_epsg(), \
             "Raster and vector files must be in the same coordinate system"
-        
-        assert all(mask_vector.geom_type == "Polygon"), \
-            "Mask vector is only allowed to contain `Polygon` geometries"
 
         raster_tensor = torch.from_numpy(raster_values).double()
+        del raster_values
         raster_tensor = raster_tensor[None, ...]
         raster_kernels = f.unfold(
             raster_tensor,
@@ -142,15 +155,15 @@ def main():
         ).permute(0, 2, 1)
 
         if single_use or coordinate_kernels_missing:
-            raw_cell_indices = torch.arange(rows)
+            # raw_cell_indices = torch.arange(rows)
             x = (
-                raw_cell_indices[None, None, None, :]
-                .repeat_interleave(cols, dim=2)
+                torch.arange(cols)[None, None, None, :]
+                .repeat_interleave(rows, dim=2)
                 .double()
             )
             y = (
-                raw_cell_indices[None, None, :, None]
-                .repeat_interleave(rows, dim=3)
+                torch.arange(rows)[None, None, :, None]
+                .repeat_interleave(cols, dim=3)
                 .double()
             )
 
@@ -158,6 +171,7 @@ def main():
             center_coordinates[:, 0, :, :] = (y * psy + y_orig) + (psy / 2.0)
             center_coordinates[:, 1, :, :] = (x * psx + x_orig) + (psx / 2.0)
 
+            # trades code simplcity for efficiency
             bbox_kernels = f.unfold(
                 center_coordinates,
                 kernel_size=args.kernel_size,
@@ -204,11 +218,11 @@ def main():
                 exit(2)
             else:
                 continue
-        classes = list(map(lambda x: re.sub("[\s,._\/]", "-", x), mask_vector.iloc[query_results[1]][mask_field].tolist()))
+        classes = list(map(lambda x: re.sub("[\s,._\/]", "-", x), mask_vector.iloc[query_results[1]][mask_field].astype(str).tolist()))
         basename = str(raster_file.stem)
         output_bboxes_list = bboxes.take(query_results[0]).tolist()
 
-        if args.cubed and not vector_footprint_written:
+        if (args.cubed and not vector_footprint_written) or (not args.cubed):
             vector_footprint_written = True
             vector_chips(output_bboxes_list, classes, raster_crs, args.out, basename)
 

@@ -5,19 +5,18 @@ import rasterio as rio
 from shapely import box
 import numpy as np
 from PIL import Image
-from random import randint
-from time import sleep
 import os
+import platform
 import multiprocessing as mp
 
 def raster_worker(q: mp.Queue) -> None:
-    if os.system() in ["Linux", "Darwin"]:
+    if platform.system() in ["Linux", "Darwin"]:
         os.nice(5)
     while True:
         # data, path, as_geotiff, transformation, crs, bands, kernel_size
         item = q.get()
         if not item[2]:
-            Image.fromarray(item[0].squeeze()).save(item[1])
+            Image.fromarray(np.moveaxis(item[0].astype(np.uint8), 0, 2)).save(item[1])
         else:
             with rio.open(
                 item[1],

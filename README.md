@@ -7,6 +7,10 @@ The goal is to export images that are completely covered by a class polygon.
 They can be saved either as PNGs to directly feed them into machine learning frameworks which may not interop with geodata or
 as GeoTIFFs when retention of geographic information is deemed important.
 
+> [!IMPORTANT]
+> It was decided to trade computational efficiency and versatility for somewhat cleaner code. Thus, you may need to reduce the size of your input images.
+> Also, also, this means only square images are supported
+
 ## Installation
 
 > [!WARNING]
@@ -25,6 +29,9 @@ pip install forestiler
 
 > [!CAUTION]
 > Only north-up images are supported. If your raster images are rotated, please transform them first!
+
+> [!CAUTION]
+> Don't quote class labels on the command line.
 
 ```
 usage: forestile [-h] [--no-progress] [--pad] [--kernel-size KERNEL_SIZE] [--stride STRIDE] 

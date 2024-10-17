@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
 import re
-from warnings import warn
 
 from tqdm import tqdm
 from shapely import STRtree, box
@@ -155,7 +154,6 @@ def main():
         ).permute(0, 2, 1)
 
         if single_use or coordinate_kernels_missing:
-            # raw_cell_indices = torch.arange(rows)
             x = (
                 torch.arange(cols)[None, None, None, :]
                 .repeat_interleave(rows, dim=2)

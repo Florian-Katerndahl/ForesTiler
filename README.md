@@ -34,36 +34,34 @@ pip install forestiler
 > Don't quote class labels on the command line.
 
 ```
-usage: forestile [-h] [--no-progress] [--pad] [--kernel-size KERNEL_SIZE] [--stride STRIDE] 
-                 --vector-mask VECTOR_MASK [--class-field CLASS_FIELD] [--all-classes]
-                 [--classes CLASSES [CLASSES ...]] [--input-glob INPUT_GLOB] [--geo-tiff]
+usage: forestile [-h] [--quiet] [--kernel-size KERNEL_SIZE] [--stride STRIDE] --vector-mask VECTOR_MASK [--class-field CLASS_FIELD] [--all-classes] [--classes CLASSES [CLASSES ...]]
+                 [--input-glob INPUT_GLOB] [--cubed] [--geo-tiff] [--footprint-only]
                  input out
 
 forestile creates image tiles from large input rasters according to a classified mask vector file.
 
 positional arguments:
   input                 Directory containing raster files to tile.
-  out                   Directory where output files should be stored. 
-                        May not exist prior to program invocation.
+  out                   Directory where output files should be stored.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --no-progress         Disable progress bar
-  --pad                 Disable padding of input images.
+  --quiet               Disable progress bar
   --kernel-size KERNEL_SIZE
                         Kernel size in pixels.
   --stride STRIDE       Stride of kernel.
   --vector-mask VECTOR_MASK
-                        Path to vector file. Always reads first layer, 
-                        if driver supports multi-layerr files (e.g. Geopackages).
+                        Path to vector file. Always reads first layer, if driver supports multi-layer files (e.g. Geopackages).
   --class-field CLASS_FIELD
                         Attribute field containing class values.
   --all-classes         Generate image chips for all unique values in class field.
   --classes CLASSES [CLASSES ...]
                         List of classes to build image tiles for.
   --input-glob INPUT_GLOB
-                        Optional glob pattern to filter files in input directory.
+                        Optional glob pattern to filter files in input directory. May not exist prior to program invocation.
+  --cubed               Set this flag if input is a single granule of a datacube
   --geo-tiff            Store image chips as GeoTiffs instead of PNGs.
+  --footprint-only      Only output the vector database with granule footprints. Do not save raster tiles.
 
 Copyright: Florian Katerndahl <florian@katerndahl.com>
 ```
